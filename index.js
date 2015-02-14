@@ -7,7 +7,7 @@ var del = require('del'),
 	browserify = require('browserify'),
 	brfs = require('brfs'),
 	watchify = require('watchify'),
-	reactify = require('reactify'),
+	webpack = require('webpack'),
 	source = require('vinyl-source-stream'),
 	merge = require('merge-stream'),
 	chalk = require('chalk');
@@ -55,7 +55,7 @@ try {
  * This package exports a function that binds tasks to a gulp instance
  */
 
-module.exports = function(gulp) {
+module.exports = function(gulp, context) {
 
 	/**
 	* Clean
@@ -134,36 +134,73 @@ module.exports = function(gulp) {
 		});
 	}
 
-	function buildApp(watch) {
+	function buildApp(watch,callback) {
 		
-		var opts = watch ? watchify.args : {};
-		
-		opts.debug = watch ? true : false;
-		opts.hasExports = true;
-		
-		var src = './src/js',
-		dest = './www/js',
-		name = 'app.js';
-		
-		var bundle = browserify(opts)
-			.add([src, name].join('/'))
-			.transform(reactify)
-			.transform(brfs);
-		
-		if (watch) {
-			watchBundle(bundle, name, dest);
-		}
-		
-		return doBundle(bundle, name, dest);
+		var opts = {};
+        // opts.context = context;
+
+		opts.entry = './src/js/app.js';
+		opts.output = {
+			filename : './www/js/app.js'
+		};
+
+        opts.module = {};
+
+        opts.module.postLoaders = [
+            {
+                loader: "transform/cacheable?brfs"
+            }
+        ]
+
+        opts.node = {
+            fs: "empty",
+            events: "empty"
+        };
+
+	    opts.module.loaders = [ 
+            { 
+                test: /\.js$/, 
+                loader: 'jsx-loader' 
+            },
+
+            { 
+            	test: /\.json$/, 
+            	loader: 'json' 
+            }
+        ];
+
+        opts.externals =[{
+            xmlhttprequest: '{XMLHttpRequest:XMLHttpRequest}'
+        }];
+
+		var compiler = webpack(opts);
+
+
+        if (watch) {
+            compiler.watch(300, function(err,stats) {
+                if(err) throw new gutil.PluginError("webpack", err);
+                gutil.log("[webpack]", stats.toString({
+                    // output options
+                }));
+    		});
+        } else {
+            compiler.run(300, function(err,stats) {
+                if(err) throw new gutil.PluginError("webpack", err);
+                gutil.log("[webpack]", stats.toString({
+                    // output options
+                }));
+                callback();
+            });
+        }
 		
 	}
 
-	gulp.task('scripts', function() {
-		return buildApp();
+	gulp.task('scripts', function(callback) {
+		return buildApp(false,callback);
 	});
 
-	gulp.task('watch-scripts', function() {
-		return buildApp(true);
+	gulp.task('watch-scripts', function(callback) {
+		return buildApp(true,callback);
 	});
 
 	gulp.task('build', ['html', 'images', 'fonts', 'less', 'scripts']);

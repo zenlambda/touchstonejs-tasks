@@ -14,14 +14,18 @@
     "browserify": "^8.1.1",
     "chalk": "^0.5.1",
     "del": "^1.1.1",
+    "express": "^4.11.2",
     "gulp": "^3.8.10",
     "gulp-less": "^2.0.1",
     "gulp-plumber": "^0.6.6",
     "gulp-shell": "^0.2.11",
     "gulp-util": "^3.0.2",
+    "json-loader": "^0.5.1",
+    "jsx-loader": "^0.12.2",
     "merge-stream": "^0.1.7",
     "vinyl-source-stream": "^1.0.0",
-    "watchify": "^2.2.1"
+    "watchify": "^2.2.1",
+    "webpack": "^1.5.3"
   },
   "scripts": {
     "test": "echo \"no tests yet\" && exit 0"

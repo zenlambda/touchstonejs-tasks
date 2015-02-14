@@ -157,6 +157,8 @@ module.exports = function(gulp, context) {
             events: "empty"
         };
 
+        opts.devtool = "#inline-source-map";
+
 	    opts.module.loaders = [ 
             { 
                 test: /\.js$/, 
